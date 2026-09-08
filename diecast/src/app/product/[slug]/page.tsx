@@ -65,7 +65,21 @@ export default function ProductPage() {
   }
 
   const isPreorder = isPreorderProduct(product);
-  const allImages = [product.image, ...product.gallery];
+  
+  const availableColors = Array.from(new Set([
+    ...(product.colors || []),
+    ...(product.colorImages?.map(ci => ci.color) || [])
+  ])).filter(Boolean);
+
+  let allImages = [product.image, ...(product.gallery || [])].filter(Boolean);
+
+  if (selectedColor && product.colorImages && product.colorImages.length > 0) {
+    const colorImagesForSelected = product.colorImages.filter(ci => ci.color.toLowerCase() === selectedColor.toLowerCase() && ci.image);
+    if (colorImagesForSelected.length > 0) {
+      // Show ONLY the images mapped to this color
+      allImages = colorImagesForSelected.map(ci => ci.image);
+    }
+  }
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
@@ -224,14 +238,18 @@ export default function ProductPage() {
 
             <hr className={styles.divider} />
             
-            {product.colors && product.colors.length > 0 && (
+            {availableColors.length > 0 && (
               <div style={{ marginBottom: '24px' }}>
                 <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '10px', color: '#444' }}>Available Colors:</h3>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  {product.colors.map(c => (
+                  {availableColors.map(c => (
                     <button 
                       key={c}
-                      onClick={() => setSelectedColor(c)}
+                      onClick={() => {
+                        setSelectedColor(c);
+                        setCurrentImageIndex(0);
+                        setMobileImageIndex(0);
+                      }}
                       style={{
                         padding: '6px 12px',
                         border: selectedColor === c ? '2px solid #0284c7' : '1px solid #ddd',
@@ -295,8 +313,8 @@ export default function ProductPage() {
                 <li><strong>Model:</strong> {product.model}</li>
                 <li><strong>Scale:</strong> {product.scale}</li>
                 <li><strong>Category:</strong> {product.category}</li>
-                {product.colors && product.colors.length > 0 && (
-                  <li><strong>Color:</strong> {product.colors.join(', ')}</li>
+                {availableColors.length > 0 && (
+                  <li><strong>Color:</strong> {availableColors.join(', ')}</li>
                 )}
                 <li><strong>Material:</strong> Diecast Metal with Plastic Parts</li>
               </ul>

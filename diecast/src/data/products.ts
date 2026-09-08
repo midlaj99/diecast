@@ -33,6 +33,7 @@ export interface Product {
   releaseDate?: string;
   preorderAmount?: number;
   colors?: string[];
+  colorImages?: { color: string; image: string }[];
 }
 
 export const isPreorderProduct = (product: Product): boolean => {

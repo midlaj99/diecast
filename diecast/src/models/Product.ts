@@ -24,6 +24,7 @@ export interface IProduct {
   releaseDate?: string;
   preorderAmount?: number;
   colors?: string[];
+  colorImages?: { color: string; image: string }[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -53,6 +54,10 @@ const ProductSchema = new Schema<IProduct>(
     releaseDate: { type: String, default: '', trim: true },
     preorderAmount: { type: Number, default: 0, min: 0 },
     colors: { type: [String], default: [] },
+    colorImages: [{
+      color: { type: String, required: true },
+      image: { type: String, required: true }
+    }],
   },
   {
     timestamps: true,

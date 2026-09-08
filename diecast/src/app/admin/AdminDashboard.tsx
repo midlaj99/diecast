@@ -276,7 +276,8 @@ export default function AdminDashboard() {
       isPreorder: false,
       releaseDate: '',
       preorderAmount: 0,
-      colors: []
+      colors: [],
+      colorImages: []
     });
   };
 
@@ -962,8 +963,68 @@ export default function AdminDashboard() {
                   <input type="text" name="name" className={styles.input} value={editingProduct.name} onChange={handleProductChange} required />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Available Colors (Comma Separated)</label>
+                  <label className={styles.label}>Available Colors (Comma Separated) - Simple</label>
                   <input type="text" name="colors" placeholder="e.g. Red, Blue, Matte Black" className={styles.input} value={editingProduct.colors?.join(', ') || ''} onChange={handleProductChange} />
+                </div>
+                
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Color Images Mapping (Advanced)</label>
+                  {editingProduct.colorImages?.map((ci, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Color Name (e.g. Red)" 
+                        className={styles.input} 
+                        value={ci.color}
+                        onChange={(e) => {
+                          const newColorImages = [...(editingProduct.colorImages || [])];
+                          newColorImages[idx].color = e.target.value;
+                          setEditingProduct({ ...editingProduct, colorImages: newColorImages });
+                        }}
+                      />
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className={styles.input}
+                        onChange={async (e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            const toastId = toast.loading('Uploading color image...');
+                            try {
+                              const url = await apiUploadImage(e.target.files[0], 'diecast/products');
+                              const newColorImages = [...(editingProduct.colorImages || [])];
+                              newColorImages[idx].image = url;
+                              setEditingProduct({ ...editingProduct, colorImages: newColorImages });
+                              toast.success('Color image uploaded!', { id: toastId });
+                            } catch (err) {
+                              toast.error('Failed to upload color image', { id: toastId });
+                            }
+                          }
+                        }}
+                      />
+                      {ci.image && <img src={ci.image} alt={ci.color} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          const newColorImages = editingProduct.colorImages?.filter((_, i) => i !== idx);
+                          setEditingProduct({ ...editingProduct, colorImages: newColorImages });
+                        }}
+                        style={{ background: '#e74c3c', color: 'white', border: 'none', padding: '8px', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      const newColorImages = [...(editingProduct.colorImages || []), { color: '', image: '' }];
+                      setEditingProduct({ ...editingProduct, colorImages: newColorImages });
+                    }}
+                    className={styles.btnAdd}
+                    style={{ marginTop: '8px' }}
+                  >
+                    + Add Color Image Mapping
+                  </button>
                 </div>
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Badge / Tag (Section Routing)</label>

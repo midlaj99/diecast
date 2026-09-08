@@ -146,6 +146,7 @@ export async function POST(req: NextRequest) {
         releaseDate: body.releaseDate || '',
         preorderAmount: body.preorderAmount || 0,
         colors: Array.isArray(body.colors) ? body.colors : [],
+        colorImages: Array.isArray(body.colorImages) ? body.colorImages : [],
       },
       { upsert: true, new: true, runValidators: true }
     );
