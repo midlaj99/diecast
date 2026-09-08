@@ -74,10 +74,10 @@ export default function ProductPage() {
   let allImages = [product.image, ...(product.gallery || [])].filter(Boolean);
 
   if (selectedColor && product.colorImages && product.colorImages.length > 0) {
-    const colorImagesForSelected = product.colorImages.filter(ci => ci.color.toLowerCase() === selectedColor.toLowerCase() && ci.image);
+    const colorImagesForSelected = product.colorImages.filter(ci => ci.color.toLowerCase() === selectedColor.toLowerCase() && ci.images && ci.images.length > 0);
     if (colorImagesForSelected.length > 0) {
       // Show ONLY the images mapped to this color
-      allImages = colorImagesForSelected.map(ci => ci.image);
+      allImages = colorImagesForSelected.flatMap(ci => ci.images);
     }
   }
 

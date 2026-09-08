@@ -985,23 +985,43 @@ export default function AdminDashboard() {
                       <input 
                         type="file" 
                         accept="image/*" 
+                        multiple
                         className={styles.input}
                         onChange={async (e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            const toastId = toast.loading('Uploading color image...');
+                          if (e.target.files && e.target.files.length > 0) {
+                            const files = Array.from(e.target.files);
+                            const toastId = toast.loading(`Uploading ${files.length} images...`);
                             try {
-                              const url = await apiUploadImage(e.target.files[0], 'diecast/products');
+                              const uploadPromises = files.map(file => apiUploadImage(file, 'diecast/products'));
+                              const urls = await Promise.all(uploadPromises);
                               const newColorImages = [...(editingProduct.colorImages || [])];
-                              newColorImages[idx].image = url;
+                              newColorImages[idx].images = [...(newColorImages[idx].images || []), ...urls];
                               setEditingProduct({ ...editingProduct, colorImages: newColorImages });
-                              toast.success('Color image uploaded!', { id: toastId });
+                              toast.success('Color images uploaded!', { id: toastId });
                             } catch (err) {
-                              toast.error('Failed to upload color image', { id: toastId });
+                              toast.error('Failed to upload color images', { id: toastId });
                             }
                           }
                         }}
                       />
-                      {ci.image && <img src={ci.image} alt={ci.color} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
+                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        {ci.images?.map((imgUrl, imgIdx) => (
+                          <div key={imgIdx} style={{ position: 'relative', width: '40px', height: '40px' }}>
+                            <img src={imgUrl} alt={`${ci.color} ${imgIdx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }} />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newColorImages = [...(editingProduct.colorImages || [])];
+                                newColorImages[idx].images = newColorImages[idx].images.filter((_, i) => i !== imgIdx);
+                                setEditingProduct({ ...editingProduct, colorImages: newColorImages });
+                              }}
+                              style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '50%', width: '16px', height: '16px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                       <button 
                         type="button" 
                         onClick={() => {
@@ -1017,7 +1037,7 @@ export default function AdminDashboard() {
                   <button 
                     type="button" 
                     onClick={() => {
-                      const newColorImages = [...(editingProduct.colorImages || []), { color: '', image: '' }];
+                      const newColorImages = [...(editingProduct.colorImages || []), { color: '', images: [] }];
                       setEditingProduct({ ...editingProduct, colorImages: newColorImages });
                     }}
                     className={styles.btnAdd}
